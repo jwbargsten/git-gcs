@@ -361,7 +361,7 @@ Versions come from git tags (setuptools_scm). To publish a release to PyPI (need
 
 ```bash
 make check-dist         # optional: manifest, wheel contents and metadata checks
-./release.sh v0.2.0     # tags, builds, asks before uploading, pushes the tag
+./release.sh v0.2.0     # on a clean, pushed main: tags, builds, asks, pushes the tag, uploads
 ```
 
 ## Contributing
