@@ -1,6 +1,6 @@
 [project]
 name = "git-remote-gcs"
-version = "0.1.2"
+version = "0.2.0"
 description = "Use Google Cloud Storage as a serverless Git remote. The GCP equivalent of git-remote-s3."
 authors = [{ name = "Tyler", email = "tyler@zerosumdefense.co" }]
 classifiers = [
@@ -11,9 +11,10 @@ classifiers = [
 ]
 license = "Apache-2.0"
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">=3.12"
 dependencies = [
     "google-cloud-storage>=2.14.0,<3.0.0",
+    "structlog",
 ]
 
 [project.urls]
@@ -24,11 +25,20 @@ PyPI = "https://pypi.org/project/git-remote-gcs/"
 
 [project.scripts]
 git-remote-gcs = "git_remote_gcs.remote:main"
-git-gcs = "git_remote_gcs.manage:main"
+git-gcs = "git_remote_gcs.cli:main"
 
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-include = ["git_remote_gcs*"]
+[dependency-groups]
+dev = [
+    "ruff",
+    "pytest",
+]
+
+[tool.ruff]
+line-length = 111
+
+[tool.basedpyright]
+reportUnusedCallResult = false

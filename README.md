@@ -2,7 +2,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/git-remote-gcs)](https://pypi.org/project/git-remote-gcs/)
 [![License](https://img.shields.io/github/license/Vicguin65/git-remote-gcs)](https://github.com/Vicguin65/git-remote-gcs/blob/main/LICENSE)
-[![Python 3.10+](https://img.shields.io/pypi/pyversions/git-remote-gcs)](https://pypi.org/project/git-remote-gcs/)
+[![Python 3.12+](https://img.shields.io/pypi/pyversions/git-remote-gcs)](https://pypi.org/project/git-remote-gcs/)
 
 Use Google Cloud Storage as a Git remote. This is a GCP equivalent of [awslabs/git-remote-s3](https://github.com/awslabs/git-remote-s3).
 
@@ -217,8 +217,12 @@ If a lock acquisition fails:
 ```
 error refs/heads/main "failed to acquire ref lock at my-repo/refs/heads/main/LOCK.lock.
 Another client may be pushing. If this persists beyond 60s,
-run git-gcs doctor gcs://my-git-bucket/my-repo --lock-ttl 60 to inspect and clear stale locks."
+run git-gcs doctor gcs://my-git-bucket/my-repo --clear-locks --lock-ttl 60"
 ```
+
+Lock age is taken from the GCS object creation time. If a push takes longer than the TTL, another client may
+take over the lock; the push then fails with `lock expired during upload` and leaves the old bundle in place
+(see `git-gcs doctor`). Raise the TTL for large repositories.
 
 Configure the lock TTL via environment variable:
 
@@ -232,8 +236,8 @@ export GIT_REMOTE_GCS_LOCK_TTL=120  # seconds, default is 60
 
 ```bash
 git-gcs doctor gcs://my-git-bucket/my-repo
-git-gcs doctor gcs://my-git-bucket/my-repo --delete-bundle  # remove conflicting bundles
-git-gcs doctor gcs://my-git-bucket/my-repo --lock-ttl 30    # clear locks older than 30s
+git-gcs doctor gcs://my-git-bucket/my-repo --delete-bundle             # keep only the newest bundle per ref
+git-gcs doctor gcs://my-git-bucket/my-repo --clear-locks --lock-ttl 30  # remove locks older than 30s
 ```
 
 ### Protect/unprotect branches
@@ -243,7 +247,12 @@ git-gcs protect gcs://my-git-bucket/my-repo main
 git-gcs unprotect gcs://my-git-bucket/my-repo main
 ```
 
-Protected branches cannot be force-pushed to or deleted.
+Protected branches cannot be force-pushed to or deleted through `git-remote-gcs` and `git-gcs`.
+
+> **Note:** protection is a safeguard against accidents, not access control. It is a marker object that the
+> client checks. Anyone with write access to the bucket (e.g. `roles/storage.objectAdmin`) can remove the marker
+> or overwrite bundles directly. For enforced protection, restrict write access with IAM conditions or use
+> [object holds / retention](https://cloud.google.com/storage/docs/object-holds).
 
 ### Delete a remote branch
 
@@ -259,22 +268,23 @@ Bundles are stored in GCS as `<prefix>/<ref>/<sha>.bundle`.
 
 **Push:**
 
-1. Acquire a per-ref lock using GCS generation-match preconditions
-2. Create a git bundle: `git bundle create <sha>.bundle <ref>`
-3. Upload the bundle to `<prefix>/<ref>/<sha>.bundle`
-4. Clean up the previous bundle for that ref
-5. Release the lock
+1. Create a git bundle: `git bundle create <sha>.bundle <ref>`
+2. Acquire a per-ref lock using GCS generation-match preconditions
+3. Check protection, fast-forward and ref name conflicts against the current remote state
+4. Upload the bundle to `<prefix>/<ref>/<sha>.bundle`
+5. Clean up the previous bundle for that ref
+6. Release the lock
 
 **Fetch:**
 
 1. List all objects under `<prefix>/refs/` to discover refs and SHAs
 2. Download the bundle for each requested ref
-3. Unbundle locally with `git bundle unbundle`
+3. Verify and unbundle locally with `git bundle verify` and `git bundle unbundle`
 
 **List:**
 
 1. Scan `<prefix>/refs/` for `.bundle` objects
-2. Extract ref names and SHAs from the object keys
+2. Extract ref names and SHAs from the object keys; if a ref has several bundles, the newest one wins
 3. Read `<prefix>/HEAD` for the default branch
 
 ### Storage layout
@@ -300,7 +310,7 @@ gs://my-git-bucket/my-repo/
 GIT_REMOTE_GCS_VERBOSE=1 git push origin main
 
 # Or use git's verbosity flag
-git -c transfer.verbosity=2 push origin main
+git push -v origin main
 ```
 
 ## Platform Compatibility
@@ -323,6 +333,18 @@ git -c transfer.verbosity=2 push origin main
 | Setup time      | Minutes           | Minutes               | Minutes              | 30+ min      |
 | UI / PRs        | No                | Yes                   | Yes                  | Yes          |
 | Serverless      | Yes               | Yes                   | N/A                  | No           |
+
+## Development
+
+Requires [uv](https://docs.astral.sh/uv/) and Python >= 3.12.
+
+```bash
+make sync   # install dependencies
+make fmt    # ruff format + ruff check --fix
+make lint   # ruff check + ruff format --check
+make test   # pytest
+make dist   # lint, test and build sdist + wheel
+```
 
 ## Contributing
 
