@@ -99,7 +99,10 @@ def conf() -> Config:
 
 
 def run_git(cwd: Path, *args: str) -> str:
-    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=True).stdout.strip()
+    res = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False)
+    if res.returncode != 0:
+        pytest.fail(f"git {' '.join(args)} failed ({res.returncode}):\n{res.stderr}")
+    return res.stdout.strip()
 
 
 def commit(cwd: Path, name: str) -> str:

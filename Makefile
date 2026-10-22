@@ -1,4 +1,4 @@
-.PHONY: help sync test lint fmt clean dist
+.PHONY: help sync test test-integration fake-gcs lint fmt clean dist
 
 # unset venv: prevent uv from complaining about already being in a virtual env
 # (uv has its own .venv folder)
@@ -10,8 +10,15 @@ help: ## this help
 sync: ## sync project with uv
 	uv sync
 
-test: ## run tests
+test: ## run tests, integration tests are skipped without a fake GCS server
 	uv run pytest tests/
+
+test-integration: ## run all tests against the fake GCS server started with `make fake-gcs`
+	STORAGE_EMULATOR_HOST=http://localhost:4443 uv run pytest tests/
+
+fake-gcs: ## start an in-memory fake GCS server on port 4443 (brew install fake-gcs-server)
+	# TZ=UTC: fake-gcs-server uses the local offset in timestamps, google-cloud-storage only parses "Z"
+	TZ=UTC fake-gcs-server -scheme http -port 4443 -backend memory -public-host localhost:4443
 
 lint: ## lint the source code
 	uv run ruff check src/ tests/

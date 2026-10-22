@@ -342,8 +342,16 @@ Requires [uv](https://docs.astral.sh/uv/) and Python >= 3.12.
 make sync   # install dependencies
 make fmt    # ruff format + ruff check --fix
 make lint   # ruff check + ruff format --check
-make test   # pytest
+make test   # pytest, integration tests are skipped
 make dist   # lint, test and build sdist + wheel
+```
+
+Integration tests run real `git push`/`git clone` against
+[fake-gcs-server](https://github.com/fsouza/fake-gcs-server) (`brew install fake-gcs-server`):
+
+```bash
+make fake-gcs           # in a separate terminal
+make test-integration
 ```
 
 ## Contributing
