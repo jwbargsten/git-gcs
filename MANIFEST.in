@@ -1,0 +1,6 @@
+exclude .*
+include Makefile
+include *.sh
+include uv.lock
+recursive-include tests *.py
+recursive-include src *.py

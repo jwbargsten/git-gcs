@@ -1,22 +1,25 @@
 # git-remote-gcs
 
-[![PyPI version](https://img.shields.io/pypi/v/git-remote-gcs)](https://pypi.org/project/git-remote-gcs/)
-[![License](https://img.shields.io/github/license/Vicguin65/git-remote-gcs)](https://github.com/Vicguin65/git-remote-gcs/blob/main/LICENSE)
-[![Python 3.12+](https://img.shields.io/pypi/pyversions/git-remote-gcs)](https://pypi.org/project/git-remote-gcs/)
+[![PyPI version](https://img.shields.io/pypi/v/git-gcs)](https://pypi.org/project/git-gcs/)
+[![License](https://img.shields.io/github/license/jwbargsten/git-remote-gcs)](https://github.com/jwbargsten/git-remote-gcs/blob/main/LICENSE)
+[![Python 3.12+](https://img.shields.io/pypi/pyversions/git-gcs)](https://pypi.org/project/git-gcs/)
 
 Use Google Cloud Storage as a Git remote. This is a GCP equivalent of [awslabs/git-remote-s3](https://github.com/awslabs/git-remote-s3).
 
 It provides a [git remote helper](https://git-scm.com/docs/gitremote-helpers) that lets you use a GCS bucket as a serverless Git server — no VMs, no Secure Source Manager, just a bucket.
 
-📦 **PyPI:** https://pypi.org/project/git-remote-gcs/
-💻 **GitHub:** https://github.com/Vicguin65/git-remote-gcs
+📦 **PyPI:** https://pypi.org/project/git-gcs/
+💻 **GitHub:** https://github.com/jwbargsten/git-remote-gcs
+
+This is a fork of [Vicguin65/git-remote-gcs](https://github.com/Vicguin65/git-remote-gcs), published on PyPI as
+`git-gcs`. The commands are still `git-remote-gcs` and `git-gcs`, and remotes still use `gcs://`.
 
 ## Installation
 
 ### macOS / Linux
 
 ```bash
-pip install git-remote-gcs
+pip install git-gcs
 ```
 
 That's it. `pip` installs the `git-remote-gcs` script to a directory that's typically already on your PATH (e.g. `/usr/local/bin` or `~/.local/bin`).
@@ -48,7 +51,7 @@ source ~/.bashrc
 ### Windows
 
 ```powershell
-pip install git-remote-gcs
+pip install git-gcs
 ```
 
 **Important:** Git on Windows uses its own shell and cannot find Python scripts on the normal PATH. You need to copy the executable into Git's directory. Run this from an **Administrator** PowerShell:
@@ -75,7 +78,7 @@ git-remote-gcs
 ### Install from source
 
 ```bash
-git clone https://github.com/Vicguin65/git-remote-gcs.git
+git clone https://github.com/jwbargsten/git-remote-gcs.git
 cd git-remote-gcs
 pip install .
 ```
@@ -173,7 +176,7 @@ For read-only access (clone and pull only), use `roles/storage.objectViewer` ins
 **2. They install on their machine:**
 
 ```bash
-pip install git-remote-gcs
+pip install git-gcs
 gcloud auth application-default login
 git clone gcs://my-git-bucket/my-repo
 ```
@@ -354,9 +357,16 @@ make fake-gcs           # in a separate terminal
 make test-integration
 ```
 
+Versions come from git tags (setuptools_scm). To publish a release to PyPI (needs twine credentials):
+
+```bash
+make check-dist         # optional: manifest, wheel contents and metadata checks
+./release.sh v0.2.0     # tags, builds, asks before uploading, pushes the tag
+```
+
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/Vicguin65/git-remote-gcs).
+Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/jwbargsten/git-remote-gcs).
 
 ## Inspired By
 

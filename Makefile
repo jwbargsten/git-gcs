@@ -1,4 +1,4 @@
-.PHONY: help sync test test-integration fake-gcs lint fmt clean dist
+.PHONY: help sync test test-integration fake-gcs lint fmt clean build dist check-dist publish
 
 # unset venv: prevent uv from complaining about already being in a virtual env
 # (uv has its own .venv folder)
@@ -32,5 +32,16 @@ clean: ## delete all pycache, .pyc, .pyo and .egg-info files
 	-rm -rf ./src/git_remote_gcs.egg-info dist/ build/
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
-dist: lint test clean ## build sdist and wheel into dist/
+build: clean ## build sdist and wheel into dist/
 	uv build
+
+dist: lint test build ## build and check the distribution with twine
+	uv run --group build twine check dist/*
+
+check-dist: ## extra packaging checks (manifest, wheel contents, metadata)
+	uv run --group build check-manifest
+	uv run --group build check-wheel-contents dist/
+	uv run --group build pyroma .
+
+publish: dist ## publish the package to pypi
+	uv run --group build twine upload dist/*

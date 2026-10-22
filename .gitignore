@@ -39,3 +39,6 @@ htmlcov/
 # GCP credentials (never commit these)
 *.json
 !pyproject.toml
+
+# written by setuptools_scm
+src/git_remote_gcs/_version.py

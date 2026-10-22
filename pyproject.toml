@@ -1,33 +1,40 @@
 [project]
-name = "git-remote-gcs"
-version = "0.2.0"
+name = "git-gcs"
+dynamic = ["version"]
 description = "Use Google Cloud Storage as a serverless Git remote. The GCP equivalent of git-remote-s3."
-authors = [{ name = "Tyler", email = "tyler@zerosumdefense.co" }]
+authors = [
+    { name = "Tyler Du", email = "tyler@zerosumdefense.co" },
+    { name = "Joachim Bargsten", email = "jw@bargsten.org" },
+]
 classifiers = [
     "Topic :: Software Development :: Version Control",
     "Topic :: Software Development :: Version Control :: Git",
+    "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
 ]
 license = "Apache-2.0"
 readme = "README.md"
+keywords = ["git", "gcs", "google-cloud-storage", "remote-helper"]
 requires-python = ">=3.12"
 dependencies = [
     "google-cloud-storage>=2.14.0,<3.0.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/Vicguin65/git-remote-gcs"
-Repository = "https://github.com/Vicguin65/git-remote-gcs"
-Issues = "https://github.com/Vicguin65/git-remote-gcs/issues"
-PyPI = "https://pypi.org/project/git-remote-gcs/"
+Homepage = "https://github.com/jwbargsten/git-remote-gcs"
+Repository = "https://github.com/jwbargsten/git-remote-gcs"
+Issues = "https://github.com/jwbargsten/git-remote-gcs/issues"
+PyPI = "https://pypi.org/project/git-gcs/"
 
 [project.scripts]
 git-remote-gcs = "git_remote_gcs.remote:main"
 git-gcs = "git_remote_gcs.cli:main"
 
 [build-system]
-requires = ["setuptools>=68.0"]
+requires = ["setuptools>=68.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [dependency-groups]
@@ -35,9 +42,22 @@ dev = [
     "ruff",
     "pytest",
 ]
+build = [
+    "twine",
+    "check-manifest",
+    "check-wheel-contents",
+    "pyroma",
+]
+
+[tool.check-manifest]
+ignore = ["src/git_remote_gcs/_version.py"]
+
+[tool.setuptools_scm]
+version_file = "src/git_remote_gcs/_version.py"
 
 [tool.ruff]
 line-length = 111
+extend-exclude = ["src/git_remote_gcs/_version.py"]
 
 [tool.basedpyright]
 reportUnusedCallResult = false
