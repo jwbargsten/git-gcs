@@ -3,8 +3,6 @@ import os
 import sys
 from dataclasses import dataclass
 
-import structlog
-
 
 class ConfigLoadError(Exception):
     pass
@@ -29,13 +27,6 @@ class Config:
 
 def init_logging(verbose: bool) -> None:
     # stdout carries the remote-helper protocol, so logs must only ever go to stderr.
-    # Called again when git sends "option verbosity", hence no logger caching.
-    structlog.configure(
-        processors=[
-            structlog.processors.add_log_level,
-            structlog.dev.ConsoleRenderer(colors=False),
-        ],
-        wrapper_class=structlog.make_filtering_bound_logger(logging.DEBUG if verbose else logging.WARNING),
-        logger_factory=structlog.PrintLoggerFactory(file=sys.stderr),
-        cache_logger_on_first_use=False,
-    )
+    # Called again when git sends "option verbosity"; basicConfig is a no-op then, only the level changes.
+    logging.basicConfig(stream=sys.stderr, format="%(name)s %(levelname)s: %(message)s")
+    logging.getLogger("git_remote_gcs").setLevel(logging.DEBUG if verbose else logging.WARNING)

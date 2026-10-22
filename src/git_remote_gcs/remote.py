@@ -7,6 +7,7 @@ Usage:
     git clone gcs://my-bucket/my-repo
 """
 
+import logging
 import subprocess
 import sys
 import tempfile
@@ -15,12 +16,11 @@ from typing import TextIO
 
 from google.api_core import exceptions as gcs_exceptions
 from google.auth.exceptions import GoogleAuthError
-from structlog import get_logger
 
 from git_remote_gcs import gcs
 from git_remote_gcs.infra import Config, ConfigLoadError, init_logging
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 CAPABILITIES = ["push", "fetch", "option"]
 
@@ -34,7 +34,7 @@ class FetchError(Exception):
 
 
 def git(*args: str) -> str:
-    logger.debug("running git", args=args)
+    logger.debug("running git %s", " ".join(args))
     return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout.strip()
 
 
@@ -71,7 +71,7 @@ def list_cmd(repo: gcs.Repo) -> list[str]:
 def fetch_ref(repo: gcs.Repo, ref: str, sha: str) -> None:
     if not gcs.is_valid_ref(ref) or not gcs.SHA_RE.fullmatch(sha):
         raise FetchError(f"refusing to fetch invalid ref '{ref}' ({sha})")
-    logger.debug("fetching", ref=ref, sha=sha)
+    logger.debug("fetching %s (%s)", ref, sha)
     with tempfile.TemporaryDirectory() as tmpdir:
         bundle_path = Path(tmpdir) / f"{sha}.bundle"
         try:
@@ -96,7 +96,7 @@ def check_push_allowed(repo: gcs.Repo, dst: str, sha: str, force: bool) -> None:
 
 def push_ref(repo: gcs.Repo, conf: Config, src: str, dst: str, force: bool) -> None:
     sha = git("rev-parse", "--verify", src)
-    logger.debug("pushing", src=src, dst=dst, sha=sha)
+    logger.debug("pushing %s -> %s (%s)", src, dst, sha)
     with tempfile.TemporaryDirectory() as tmpdir:
         # Bundle before locking: it does not depend on remote state and is the slow part for big repos.
         # SUGGESTION: incremental bundles (with the remote sha as prerequisite) instead of full history
@@ -120,7 +120,7 @@ def push_ref(repo: gcs.Repo, conf: Config, src: str, dst: str, force: bool) -> N
 
 
 def delete_remote_ref(repo: gcs.Repo, conf: Config, dst: str) -> None:
-    logger.debug("deleting remote ref", ref=dst)
+    logger.debug("deleting remote ref %s", dst)
     with gcs.ref_lock(repo, dst, conf.lock_ttl):
         if gcs.is_protected(repo, dst):
             raise PushRejectedError("branch is protected")
@@ -149,7 +149,7 @@ def push_refspec(repo: gcs.Repo, conf: Config, uri: str, refspec: str) -> str:
         gcs_exceptions.GoogleAPIError,
         OSError,
     ) as ex:
-        logger.debug("push failed", ref=dst, exc_info=ex)
+        logger.debug("push of %s failed", dst, exc_info=ex)
         return f"error {dst} {to_one_line(ex)}"
     return f"ok {dst}"
 
@@ -170,7 +170,7 @@ def reply(out: TextIO, lines: list[str]) -> None:
 
 def run(repo: gcs.Repo, conf: Config, uri: str, stdin: TextIO, stdout: TextIO) -> None:
     while line := stdin.readline().strip():
-        logger.debug("command", line=line)
+        logger.debug("command: %s", line)
         match line.split(" ", 1)[0]:
             case "capabilities":
                 reply(stdout, [*CAPABILITIES, ""])

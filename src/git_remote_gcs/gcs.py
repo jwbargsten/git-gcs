@@ -7,6 +7,7 @@ Storage layout in GCS:
 """
 
 import json
+import logging
 import os
 import re
 from collections.abc import Iterator
@@ -17,9 +18,8 @@ from pathlib import Path
 
 from google.api_core import exceptions as gcs_exceptions
 from google.cloud import storage
-from structlog import get_logger
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 SHA_RE = re.compile(r"[0-9a-f]{40}")
 LOCK_NAME = "LOCK.lock"
@@ -129,26 +129,26 @@ def get_head(repo: Repo) -> str | None:
 
 def set_head(repo: Repo, ref: str) -> None:
     repo.bucket.blob(repo.key("HEAD")).upload_from_string(ref, content_type="text/plain")
-    logger.debug("set HEAD", ref=ref)
+    logger.debug("set HEAD -> %s", ref)
 
 
 def upload_bundle(repo: Repo, ref: str, sha: str, local_path: Path) -> str:
     key = repo.key(ref, f"{sha}.bundle")
     repo.bucket.blob(key).upload_from_filename(str(local_path))
-    logger.debug("uploaded bundle", key=key)
+    logger.debug("uploaded bundle %s", key)
     return key
 
 
 def download_bundle(repo: Repo, ref: str, sha: str, local_path: Path) -> None:
     key = repo.key(ref, f"{sha}.bundle")
     repo.bucket.blob(key).download_to_filename(str(local_path))
-    logger.debug("downloaded bundle", key=key)
+    logger.debug("downloaded bundle %s", key)
 
 
 def delete_blob(repo: Repo, key: str) -> None:
     with suppress(gcs_exceptions.NotFound):
         repo.bucket.blob(key).delete()
-    logger.debug("deleted", key=key)
+    logger.debug("deleted %s", key)
 
 
 def delete_ref(repo: Repo, ref: str) -> None:
@@ -156,7 +156,7 @@ def delete_ref(repo: Repo, ref: str) -> None:
         delete_blob(repo, bundle.key)
     if get_head(repo) == ref:
         delete_blob(repo, repo.key("HEAD"))
-    logger.debug("deleted ref", ref=ref)
+    logger.debug("deleted ref %s", ref)
 
 
 def _age(created: datetime) -> float:
@@ -183,15 +183,15 @@ def acquire_lock(repo: Repo, ref: str, ttl: int) -> Lock | None:
         return None
     age = _age(blob.time_created)
     if age <= ttl:
-        logger.debug("lock is fresh", key=key, age=round(age))
+        logger.debug("lock %s is fresh (%.0fs)", key, age)
         return None
 
-    logger.debug("replacing stale lock", key=key, age=round(age))
+    logger.debug("replacing stale lock %s (%.0fs)", key, age)
     try:
         blob.delete(if_generation_match=blob.generation)
         blob.upload_from_string(data, content_type="application/json", if_generation_match=0)
     except (gcs_exceptions.PreconditionFailed, gcs_exceptions.NotFound):
-        logger.debug("another client acquired the lock first", key=key)
+        logger.debug("another client acquired lock %s first", key)
         return None
     return Lock(key=key, generation=blob.generation)
 
@@ -210,7 +210,7 @@ def release_lock(repo: Repo, lock: Lock) -> None:
     try:
         repo.bucket.blob(lock.key).delete(if_generation_match=lock.generation)
     except (gcs_exceptions.NotFound, gcs_exceptions.PreconditionFailed):
-        logger.warning("lock was lost before release", key=lock.key)
+        logger.warning("lock %s was lost before release", lock.key)
 
 
 @contextmanager
