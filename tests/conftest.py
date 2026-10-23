@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 from google.api_core import exceptions as gcs_exceptions
 
-from git_remote_gcs import gcs
-from git_remote_gcs.infra import Config
+from git_gcs import gcs
+from git_gcs.infra import Config
 
 _generations = itertools.count(1)
 
@@ -24,7 +24,7 @@ class FakeObject:
 
 
 class FakeBlob:
-    """The subset of google.cloud.storage.Blob that git_remote_gcs uses, including generation preconditions"""
+    """The subset of google.cloud.storage.Blob that git_gcs uses, including generation preconditions"""
 
     def __init__(self, bucket: "FakeBucket", name: str, obj: FakeObject | None = None):
         self.bucket = bucket

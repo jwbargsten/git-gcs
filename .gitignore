@@ -41,4 +41,4 @@ htmlcov/
 !pyproject.toml
 
 # written by setuptools_scm
-src/git_remote_gcs/_version.py
+src/git_gcs/_version.py

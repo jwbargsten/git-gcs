@@ -2,7 +2,7 @@
 
 from datetime import timedelta
 
-from git_remote_gcs import cli, gcs
+from git_gcs import cli, gcs
 
 
 def _stale_lock(repo):
