@@ -30,7 +30,6 @@ Issues = "https://github.com/jwbargsten/git-remote-gcs/issues"
 PyPI = "https://pypi.org/project/git-gcs/"
 
 [project.scripts]
-git-remote-gcs = "git_remote_gcs.remote:main"
 git-gcs = "git_remote_gcs.cli:main"
 
 [build-system]
