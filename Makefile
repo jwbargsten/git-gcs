@@ -29,7 +29,7 @@ fmt: ## format the source code with ruff
 	uv run ruff check --fix src/ tests/
 
 clean: ## delete all pycache, .pyc, .pyo and .egg-info files
-	-rm -rf ./src/git_remote_gcs.egg-info dist/ build/
+	-rm -rf ./src/git_gcs.egg-info dist/ build/
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 build: clean ## build sdist and wheel into dist/

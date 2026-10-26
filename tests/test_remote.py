@@ -6,7 +6,7 @@ from datetime import timedelta
 import pytest
 from conftest import commit, run_git
 
-from git_remote_gcs import gcs, remote
+from git_gcs import gcs, remote
 
 URI = "gcs://bucket/my-repo"
 

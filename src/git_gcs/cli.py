@@ -5,8 +5,8 @@ import sys
 
 from google.auth.exceptions import GoogleAuthError
 
-from git_remote_gcs import gcs
-from git_remote_gcs.infra import init_logging
+from git_gcs import gcs
+from git_gcs.infra import init_logging
 
 
 def check_head(repo: gcs.Repo, refs: dict[str, str]) -> None:

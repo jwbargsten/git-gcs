@@ -29,4 +29,4 @@ def init_logging(verbose: bool) -> None:
     # stdout carries the remote-helper protocol, so logs must only ever go to stderr.
     # Called again when git sends "option verbosity"; basicConfig is a no-op then, only the level changes.
     logging.basicConfig(stream=sys.stderr, format="%(name)s %(levelname)s: %(message)s")
-    logging.getLogger("git_remote_gcs").setLevel(logging.DEBUG if verbose else logging.WARNING)
+    logging.getLogger("git_gcs").setLevel(logging.DEBUG if verbose else logging.WARNING)

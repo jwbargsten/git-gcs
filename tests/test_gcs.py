@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import pytest
 
-from git_remote_gcs import gcs
+from git_gcs import gcs
 
 SHA_A = "a" * 40
 SHA_B = "b" * 40

@@ -10,7 +10,7 @@ from conftest import commit, run_git
 from google.api_core import exceptions as gcs_exceptions
 from google.cloud import storage
 
-from git_remote_gcs import gcs
+from git_gcs import gcs
 
 pytestmark = pytest.mark.skipif(
     "STORAGE_EMULATOR_HOST" not in os.environ, reason="needs a fake GCS server, see `make fake-gcs`"
