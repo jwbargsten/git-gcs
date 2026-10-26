@@ -3,7 +3,6 @@ name = "git-gcs"
 dynamic = ["version"]
 description = "Use Google Cloud Storage as a serverless Git remote. The GCP equivalent of git-remote-s3."
 authors = [
-    { name = "Tyler Du", email = "tyler@zerosumdefense.co" },
     { name = "Joachim Bargsten", email = "jw@bargsten.org" },
 ]
 classifiers = [
@@ -24,9 +23,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jwbargsten/git-remote-gcs"
-Repository = "https://github.com/jwbargsten/git-remote-gcs"
-Issues = "https://github.com/jwbargsten/git-remote-gcs/issues"
+Homepage = "https://github.com/jwbargsten/git-gcs"
+Repository = "https://github.com/jwbargsten/git-gcs"
+Issues = "https://github.com/jwbargsten/git-gcs/issues"
 PyPI = "https://pypi.org/project/git-gcs/"
 
 [project.scripts]
